@@ -1,0 +1,78 @@
+<style>
+html, body {
+    overflow: hidden;
+}
+img {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+</style>
+<img src="lava.jpg" style="width: 100vw; height: 100vh" id="lava">
+<img src="bunga.png" style="height: 100px" class="actor">
+<img src="bunga.png" style="height: 200px" class="actor">
+<button id="play" style="position: absolute; right: 0; bottom: 0; display: none" onclick="play()">Play</button>
+<script type="text/javascript">
+let drag = null;
+let drags = new Array();
+window.addEventListener('mousedown', function(e) {
+    if (!e.target.classList.contains("actor")) {
+        return;
+    }
+    drag = {
+        elem: e.target,
+        sx: e.pageX,
+        sy: e.pageY,
+        x: parseInt(e.target.style.left) || 0,
+        y: parseInt(e.target.style.top) || 0,
+        startTime: Date.now(),
+        motion: new Array(),
+    };
+    e.preventDefault();
+}, {capture: true});
+window.addEventListener('mouseup', function(e) {
+    if (drag == null) {
+        return;
+    }
+    drags.push(drag);
+    document.getElementById('play').style.display = 'block';
+    drag = null;
+    return false;
+}, {capture: true});
+window.addEventListener('mousemove', function(e) {
+    if (drag == null) {
+        return;
+    }
+    drag.motion.push({
+        time: Date.now(),
+        x: e.pageX,
+        y: e.pageY,
+    });
+    drag.elem.style.left = (e.pageX - drag.sx + drag.x) + "px";
+    drag.elem.style.top = (e.pageY - drag.sy + drag.y) + "px";
+    return false;
+}, {capture: true});
+
+async function play() {
+    for (var actor of document.getElementsByClassName("actor")) {
+        actor.style.left = "0";
+        actor.style.top = "0";
+    }
+    var playTime = Date.now();
+    var recordTime = null;
+    for (var d of drags) {
+        d.elem.style.left = d.x + "px";
+        d.elem.style.top = d.y + "px";
+        if (recordTime == null) {
+            recordTime = d.startTime;
+        }
+        for (var m of d.motion) {
+            // TODO replace this with an await on setTimeout
+            while ((Date.now() - playTime) < (m.time - recordTime));
+            d.elem.style.left = (m.x - d.sx + d.x) + "px";
+            d.elem.style.top = (m.y - d.sy + d.y) + "px";
+            await new Promise(requestAnimationFrame);
+        }
+    }
+}
+</script>
