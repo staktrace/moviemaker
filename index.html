@@ -10,7 +10,6 @@ img {
 </style>
 <img src="lava.jpg" style="width: 100vw; height: 100vh" id="lava">
 <img src="bunga.png" style="height: 100px" class="actor">
-<img src="bunga.png" style="height: 200px" class="actor">
 <button id="play" style="position: absolute; right: 0; bottom: 0; display: none" onclick="play()">Play</button>
 <script type="text/javascript">
 let drag = null;
@@ -67,8 +66,10 @@ async function play() {
             recordTime = d.startTime;
         }
         for (var m of d.motion) {
-            // TODO replace this with an await on setTimeout
-            while ((Date.now() - playTime) < (m.time - recordTime));
+            var delay = playTime + (m.time - recordTime) - Date.now();
+            if (delay > 0) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
             d.elem.style.left = (m.x - d.sx + d.x) + "px";
             d.elem.style.top = (m.y - d.sy + d.y) + "px";
             await new Promise(requestAnimationFrame);
